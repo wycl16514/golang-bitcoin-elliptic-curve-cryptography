@@ -259,4 +259,4 @@ p1 + p1 over field order 223 is (x:FieldElement{order: 223, num: 49}
 
 )
 ```
-I can make you at rest that I have check those result with a pen and paper, trust me!
+I can make you at rest that I have checked those result with a pen and paper, trust me!
