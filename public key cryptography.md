@@ -19,7 +19,7 @@ name this hash result as z，
 
 6, realse the turple (z, s，r) as the signiture of the private key owner
 
-7. any one who want to make sure the message is really created by the owner of the private key, he or she can do the following steps:
+7, any one who want to make sure the message is really created by the owner of the private key, he or she can do the following steps:
    1, compute u = z / s, v = r / s,
    2, compute u* G + v * P = (z/s)*G + (r/s)*P = (z/s)*G + (r/s)*(e*G) = (z/s)*G + (re/s)*G = ((z+re)/s)*G = k*G = R',
    take the x coordinate of R' and check it with r, if they are the same, then we can be sure that message z is really created by the owner of the private key
