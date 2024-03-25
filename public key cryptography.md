@@ -10,7 +10,7 @@ The public key cryptography has its name as Elliptic Curve Digital Signature Alg
 
 2, the owner of private key randomly select two finite field member u, v, and compute k = u + ve , k need to keep secret.
 
-3. compute R = k * G, we only use the x coordinate of R, and name the value of x as r
+3, compute R = k * G = (u + v*e)*G = u*G + v*(e*G) = u*G+v*P, we only use the x coordinate of R, and name the value of x as r
 
 4, the owner of private key generate a given message in text format with any length(it can be published), and hash it to a 256 bits number by using sha256 or md5, 
 name this hash result as z，
@@ -21,8 +21,8 @@ name this hash result as z，
 
 7. any one who want to make sure the message is really created by the owner of the private key, he or she can do the following steps:
    1, compute u = z / s, v = r / s,
-   2, compute u* G + v * P = R', take the x coordinate of R' and check it with r, if they are the same, then we can be sure that message z is really created by the
-   owner of the private key
+   2, compute u* G + v * P = (z/s)*G + (r/s)*P = (z/s)*G + (r/s)*(e*G) = (z/s)*G + (re/s)*G = ((z+re)/s)*G = k*G = R',
+   take the x coordinate of R' and check it with r, if they are the same, then we can be sure that message z is really created by the owner of the private key
 
 Let's put these steps into code as following:
 ```g
