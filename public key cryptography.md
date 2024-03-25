@@ -20,10 +20,45 @@ name this hash result as z，
 6, realse the turple (z, s，r) as the signiture of the private key owner
 
 7, any one who want to make sure the message is really created by the owner of the private key, he or she can do the following steps:
+   
    1, compute u = z / s, v = r / s,
+   
    2, compute u* G + v * P = (z/s)*G + (r/s)*P = (z/s)*G + (r/s)*(e*G) = (z/s)*G + (re/s)*G = ((z+re)/s)*G = k*G = R',
    take the x coordinate of R' and check it with r, if they are the same, then we can be sure that message z is really created by the owner of the private key
 
-Let's put these steps into code as following:
+   3. notice we have shown that n * G is identity, therefore the above computation related to z, s, r, e need to do base on mudulur of n
+
+Let's put these steps into code as following, first add a new file named signature.go
 ```g
+package elliptic_curve
+
+import (
+	"fmt"
+)
+
+type Signature struct {
+	r *FieldElement
+	s *FieldElement
+}
+
+func NewSignature(r *FieldElement, s *FieldElement) *Signature {
+	return &Signature{
+		r: r,
+		s: s,
+	}
+}
+
+func (s *Signature) String() string {
+	return fmt.Sprintf("Signature(r: {%s}, s:{%s})", s.r, s.s)
+}
+
+```
+it contains two components, one is r, and the other is s, they will be used for verify. Second we add a new function for FieldElement, this fuction used to get
+the inverse of the current field element:
+```go
+func (f *FieldElement) Inverse() *FieldElement {
+	//use Fermat's little theorem to get the reverse of the given field element
+	var op big.Int
+	return f.Power(op.Sub(f.order, big.NewInt(int64(2))))
+}
 ```
