@@ -181,6 +181,146 @@ problem.
 
 5. return the signature (r, s)
 
-let's see how to use code to that it:
+let's see how to use code to that it，first let's add a new file named util.go and we put all helper function into it:
 ```g
+package elliptic_curve
+
+import (
+	"crypto/sha256"
+	"math/big"
+)
+
+func Hash256(text string) []byte {
+	/*
+		doing sha256 twice
+	*/
+	hashOnce := sha256.Sum256([]byte(text))
+	hashTwice := sha256.Sum256(hashOnce[:])
+	return hashTwice[:]
+}
+
+func getGenerator() *Point {
+	Gx := new(big.Int)
+	Gx.SetString("79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798", 16)
+	Gy := new(big.Int)
+	Gy.SetString("483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8", 16)
+	G := S256Point(Gx, Gy)
+	return G
+}
+
+func GetBitcoinValueN() *big.Int {
+	n := new(big.Int)
+	n.SetString("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141", 16)
+	return n
+}
 ```
+The above functions are used in many places, notice we move the  getGenerator from the point struct and we need to 
+make conresponding changes in point.go, we add another new file named private-key.go, and add the following code:
+```g
+package elliptic_curve
+
+import (
+	"crypto/rand"
+	"fmt"
+	"math/big"
+)
+
+type PrivateKey struct {
+	secret *big.Int
+	point  *Point
+}
+
+func NewPrivateKey(secret *big.Int) *PrivateKey {
+	G := getGenerator()
+
+	return &PrivateKey{
+		secret: secret,
+		point:  G.ScalarMul(secret),
+	}
+}
+
+func (p *PrivateKey) String() string {
+	return fmt.Sprintf("private key hex: {%s}", p.secret)
+}
+
+func (p *PrivateKey) GetPublicKey() *Point {
+	G := getGenerator()
+	return G.ScalarMul(p.secret)
+}
+
+func (p *PrivateKey) Sign(z *big.Int) *Signature {
+	n := GetBitcoinValueN()
+	//select random number in the range of n
+	//k can't use twice otherwise private will revealed
+	k, err := rand.Int(rand.Reader, n)
+	kField := NewFieldElement(n, k)
+	if err != nil {
+		panic(fmt.Sprintf("Sign err with rand int: %s\n", err))
+	}
+	G := getGenerator()
+	r := G.ScalarMul(k).x.num
+	//s = (z + r * e) / k, base on mudulur n
+	rField := NewFieldElement(n, r)
+	eField := NewFieldElement(n, p.secret)
+	zField := NewFieldElement(n, z)
+	rMulSecret := rField.Multiply(eField)
+	zAddRmulSecret := zField.Add(rMulSecret)
+	kInverse := kField.Inverse()
+	sField := zAddRmulSecret.Multiply(kInverse)
+	var opDiv big.Int
+	if sField.num.Cmp(opDiv.Div(n, big.NewInt(int64(2)))) > 0 {
+	        /*
+	         if s > n / 2 we need to change it to n - s, when doing signature
+	         verify, s and n - s are equivalence doing this change is for malleability reasons, detail:
+	         https://bitcoin.stackexchange.com/questions/85946/low-s-value-in-bitcoin-signature
+	         */
+		var opSub big.Int
+		sField = NewFieldElement(n, opSub.Sub(n, sField.num))
+	}
+	return &Signature{
+		r: NewFieldElement(n, r),
+		s: sField,
+	}
+
+}
+```
+The sign function is used for signature, the input parameter z is the hashed 256 bits integer, remember any operation
+like multiply or divide are base on mudulur n, that's why we create FieldElement object to do the operation.
+
+We need to pay attetion to the value of s, if its value is bigger than n/2, than we can change it to n - s without 
+having any effect on the signature and verify, this is required by bitcoin blockchain.
+
+let's use the above code to create a signature and verify , following is the code for main.go:
+```g
+package main
+
+import (
+	ecc "elliptic_curve"
+	"fmt"
+	"math/big"
+)
+
+func main() {
+	e := big.NewInt(int64(12345))
+	z := new(big.Int)
+	z.SetBytes(ecc.Hash256("Tesing my Signing"))
+
+	privateKey := ecc.NewPrivateKey(e)
+	sig := privateKey.Sign(z)
+	fmt.Printf("sig is %s\n", sig)
+
+	pubKey := privateKey.GetPublicKey()
+	n := ecc.GetBitcoinValueN()
+	zField := ecc.NewFieldElement(n, z)
+	res := pubKey.Verify(zField, sig)
+	fmt.Printf("verify signature result: %v\n", res)
+}
+```
+
+Running the above code can get the following result:
+```g
+sig is Signature(r: {FieldElement{order: 115792089237316195423570985008687907852837564279074904382605163141518161494337, num: 34760265646743494300414826834746237430743723107036364618855713969497218599817}}, s:{FieldElement{order: 115792089237316195423570985008687907852837564279074904382605163141518161494337, num: 6051507193975158704644645619286490297172153466045651190239770626531632363100}})
+verify signature result: true
+```
+we can see the code can create the signature object and be verify by our verify function, and the logic circle can be
+closed
