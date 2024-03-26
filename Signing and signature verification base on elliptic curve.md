@@ -166,3 +166,21 @@ s = 0x68342ceff8935ededd102dd876ffd6ba72d6a427a3edb13d26eb0781cb423c4
 z = 0x7c076ff316692a3d7eb3c3bb0f8b1488cf72e1afcd929e29307032997a838a3d
 r = 0xeff69ef2b1bd93a66ed5219add4fb51e11a840f404876325a1e8ffe0529a2c
 s = 0xc7207fee197d27c618aea621406f6bf5ef6fca38681d82b2f06fddbdce6feab6
+
+Let's see how we can do the signing process:
+1, given a text message, using sha256 to hash it twice into a 256 bits integer which is z, 
+do sha256 twice is for security reason, because it is found that one time of sha256 may be reversible,
+that is people can get the 256 integer and recreate the original text used for the hash, do twice can prevent such 
+problem.
+
+2, Create a private key e, this can be done by a sha256 on a text and compute public key P = e * G
+
+3. Choosing a random number k, compute R = k * G and get r as the x coordinate of R
+
+4. compute s = (z + r * e) / k, notice the "/ k" is the inverse of k
+
+5. return the signature (r, s)
+
+let's see how to use code to that it:
+```g
+```
