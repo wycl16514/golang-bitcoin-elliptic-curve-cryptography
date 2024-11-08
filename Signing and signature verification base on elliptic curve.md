@@ -30,7 +30,7 @@ name this hash result as z，
       "/" is not the normal arithmetic divide , its the inverse of  multilication.
 
 Let's put these steps into code as following, first add a new file named signature.go
-```g
+```go
 package elliptic_curve
 
 import (
@@ -149,8 +149,10 @@ func main() {
 	fmt.Printf("verify result is %v\n", verifyRes)
 }
 ```
+
 Run the above code you will get following result:
-```g
+
+```go
 verify result is true
 ```
 
@@ -182,7 +184,8 @@ problem.
 5. return the signature (r, s)
 
 let's see how to use code to that it，first let's add a new file named util.go and we put all helper function into it:
-```g
+
+```go
 package elliptic_curve
 
 import (
@@ -214,9 +217,11 @@ func GetBitcoinValueN() *big.Int {
 	return n
 }
 ```
+
 The above functions are used in many places, notice we move the  getGenerator from the point struct and we need to 
 make conresponding changes in point.go, we add another new file named private-key.go, and add the following code:
-```g
+
+```go
 package elliptic_curve
 
 import (
@@ -284,6 +289,7 @@ func (p *PrivateKey) Sign(z *big.Int) *Signature {
 
 }
 ```
+
 The sign function is used for signature, the input parameter z is the hashed 256 bits integer, remember any operation
 like multiply or divide are base on mudulur n, that's why we create FieldElement object to do the operation.
 
@@ -291,7 +297,8 @@ We need to pay attetion to the value of s, if its value is bigger than n/2, than
 having any effect on the signature and verify, this is required by bitcoin blockchain.
 
 let's use the above code to create a signature and verify , following is the code for main.go:
-```g
+
+```go
 package main
 
 import (
@@ -318,9 +325,11 @@ func main() {
 ```
 
 Running the above code can get the following result:
-```g
+
+```go
 sig is Signature(r: {FieldElement{order: 115792089237316195423570985008687907852837564279074904382605163141518161494337, num: 34760265646743494300414826834746237430743723107036364618855713969497218599817}}, s:{FieldElement{order: 115792089237316195423570985008687907852837564279074904382605163141518161494337, num: 6051507193975158704644645619286490297172153466045651190239770626531632363100}})
 verify signature result: true
 ```
+
 we can see the code can create the signature object and be verify by our verify function, and the logic circle can be
 closed
