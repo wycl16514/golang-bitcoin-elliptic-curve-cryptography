@@ -17,7 +17,7 @@ with t times, and t is how many 1 in the binary form of k, this greatly reduce t
 which means it has most 40 1s in its binary form which means we only need to do no more than 40 times of addition compare with on trillion times of addition before!
 
 Let's see how we can put that trick into code:
-```g
+```go
 func (p *Point) ScalarMul(scalar *big.Int) *Point {
 	if scalar == nil {
 		panic("scalar mul error ofr nil scalar")
@@ -40,7 +40,7 @@ func (p *Point) ScalarMul(scalar *big.Int) *Point {
 }
 ```
 Let's run test the code and get the result:
-```g
+```go
 package main
 
 import (
@@ -83,7 +83,7 @@ func main() {
 }
 ```
 The result of running above code is :
-```g
+```go
 2*(192,105) is  (x: FieldElement{order: 223, num: 49}, y: FieldElement{order: 223, num: 71}, a: FieldElement{order: 223, num: 0}, b: FieldElement{order: 223, num: 7})
 
 2*(143,98) is (x: FieldElement{order: 223, num: 64}, y: FieldElement{order: 223, num: 168}, a: FieldElement{order: 223, num: 0}, b: FieldElement{order: 223, num: 7})
