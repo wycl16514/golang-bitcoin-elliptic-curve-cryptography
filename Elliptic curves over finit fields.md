@@ -189,7 +189,7 @@ func (p *Point) NotEqual(other *Point) bool {
 
 ```
 We change the code accordingly and no new things there, let's test the changed code as following:
-```g
+```go
 package main
 
 import (
