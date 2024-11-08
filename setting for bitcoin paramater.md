@@ -13,7 +13,8 @@ from enough to be useful in bitcoin and that's why we resort to big.Int for help
 k*G as the public key, in later section we will see how to generate a wallet address by using the public key.
 
 First let's use code to check the point G is really on the curve of y^2 = x^3 + 7:
-```g
+
+```go
 func main() {
 	var op big.Int
 	twoExp256 := op.Exp(big.NewInt(int64(2)), big.NewInt(int64(256)), nil)
@@ -39,8 +40,10 @@ func main() {
 
 }
 ```
+
 Running above code gives the result :
-```g
+
+```go
 pp is 115792089237316195423570985008687907853269984665640564039457584007908834671663
 Gx :55066263022277343669578718895168534326250603453777594175500187360389116729240
 Gy: 32670510020758816978083085130507043184471273380659243275938904335757337482424
@@ -52,9 +55,11 @@ num: 326705100207588169780830851305070431844712733806592432759389043357573374824
 a: FieldElement{order: 115792089237316195423570985008687907853269984665640564039457584007908834671663, num: 0},
 b: FieldElement{order: 115792089237316195423570985008687907853269984665640564039457584007908834671663, num: 7})
 ```
+
 We can see that's crazy huge number for human. Now Let's add two specific functions for generating finit field element and elliptic point for bitcoin, in 
 finite-element.go, we add the following function:
-```g
+
+```go
 func S256Field(num *big.Int) *FieldElement {
 	var op big.Int
 	twoExp256 := op.Exp(big.NewInt(int64(2)), big.NewInt(int64(256)), nil)
@@ -83,8 +88,10 @@ func (f *FieldElement) Power(power *big.Int) *FieldElement {
 	return NewFieldElement(f.order, modRes)
 }
 ```
+
 S256Field create a finite field element with order set to 2^255-2^32-977, and we have a fix on Power operation for FieldElement, that is we compute modulur at the
 same time when we compute power, that's can greately improve the computation time when f.num and t are huge number.In point.go we add following function:
+
 ```go
 func S256Point(x *big.Int, y *big.Int) *Point {
 	a := S256Field(big.NewInt(int64(0)))
@@ -109,7 +116,8 @@ func S256Point(x *big.Int, y *big.Int) *Point {
 ```
 In S256Point we create a elliptic curve point and set its a and b component to field element with order p and value set to 0 and 7. In main.go we use the 
 following code to run the newly added code above:
-```g
+
+```go
 func main() {
         var op big.Int
 	twoExp256 := op.Exp(big.NewInt(int64(2)), big.NewInt(int64(256)), nil)
@@ -133,8 +141,10 @@ func main() {
 	fmt.Printf("n*G is %s\n", G.ScalarMul(n))
 }
 ```
+
 Running the above code we get the following result:
-```g
+
+```go
 pp is 115792089237316195423570985008687907853269984665640564039457584007908834671663
 Gx :55066263022277343669578718895168534326250603453777594175500187360389116729240
 Gy: 32670510020758816978083085130507043184471273380659243275938904335757337482424
